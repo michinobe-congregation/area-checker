@@ -1,0 +1,85 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>現在地エリア判定</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 1em;
+    }
+    #result {
+      margin-top: 1em;
+      font-size: 1.2em;
+      font-weight: bold;
+    }
+    button {
+      padding: 0.5em 1em;
+      font-size: 1em;
+    }
+    .tag {
+      background-color: #dff0d8;
+      color: #3c763d;
+      padding: 4px 8px;
+      border-radius: 4px;
+      display: inline-block;
+      margin-top: 0.5em;
+    }
+  </style>
+</head>
+<body>
+  <h2>現在地からエリアを判定</h2>
+  <button onclick="checkLocation()">最寄りの区域を探す</button>
+  <div id="result">位置情報を取得していません。</div>
+
+  <script>
+    const polygons = [{"name": "FT01A", "label": "\u30c6\u30b9\u30c8\u30a8\u30ea\u30a21", "coords": [{"lng": 140.0077027, "lat": 35.7450994}, {"lng": 140.007932, "lat": 35.7448893}, {"lng": 140.0079736, "lat": 35.7450863}, {"lng": 140.0078408, "lat": 35.7451788}, {"lng": 140.0077027, "lat": 35.7450994}]}, {"name": "FT01B", "label": "\u30c6\u30b9\u30c8\u30a8\u30ea\u30a22", "coords": [{"lng": 140.0079736, "lat": 35.7450863}, {"lng": 140.007932, "lat": 35.7448893}, {"lng": 140.0078006, "lat": 35.7450003}, {"lng": 140.0077161, "lat": 35.744873}, {"lng": 140.0076557, "lat": 35.7447173}, {"lng": 140.0078649, "lat": 35.74459}, {"lng": 140.0080259, "lat": 35.7450406}, {"lng": 140.0079736, "lat": 35.7450863}]}, {"name": "FT01C", "label": "\u30c6\u30b9\u30c8\u30a8\u30ea\u30a23", "coords": [{"lng": 140.0076557, "lat": 35.7447249}, {"lng": 140.0077161, "lat": 35.744873}, {"lng": 140.0078006, "lat": 35.7450003}, {"lng": 140.0077027, "lat": 35.7450994}, {"lng": 140.0074425, "lat": 35.7449122}, {"lng": 140.0076557, "lat": 35.7447249}]}];
+
+    function pointInPolygon(point, vs) {
+      let x = point.lng, y = point.lat;
+      let inside = false;
+      for (let i = 0, j = vs.length - 1; i < vs.length; j = i++) {
+        let xi = vs[i].lng, yi = vs[i].lat;
+        let xj = vs[j].lng, yj = vs[j].lat;
+        let intersect = ((yi > y) != (yj > y)) &&
+                        (x < (xj - xi) * (y - yi) / (yj - yi + 0.00000001) + xi);
+        if (intersect) inside = !inside;
+      }
+      return inside;
+    }
+
+    function checkLocation() {
+      if (!navigator.geolocation) {
+        document.getElementById('result').textContent = "位置情報に対応していません。";
+        return;
+      }
+
+      navigator.geolocation.getCurrentPosition(position => {
+        const userPoint = {
+          lat: position.coords.latitude,
+          lng: position.coords.longitude
+        };
+
+        let found = false;
+        for (const poly of polygons) {
+          if (pointInPolygon(userPoint, poly.coords)) {
+            document.getElementById('result').innerHTML =
+              `<div>区域名: ${poly.name}</div>
+               <div class="tag">$ {poly.label}</div>`;
+            found = true;
+            break;
+          }
+        }
+
+        if (!found) {
+          document.getElementById('result').textContent = "現在エリアの外にいます。";
+        }
+      }, err => {
+        document.getElementById('result').textContent = "位置情報を取得できませんでした。";
+      });
+    }
+  </script>
+</body>
+</html>
+    
