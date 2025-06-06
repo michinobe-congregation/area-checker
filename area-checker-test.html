@@ -2,21 +2,56 @@
 <!DOCTYPE html>
 <html>
 <head>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <meta charset="utf-8" />
   <title>現在地エリア判定</title>
   <style>
     body {
       font-family: sans-serif;
+    }
+    body .inner {
       padding: 1em;
     }
     #result {
-      margin-top: 1em;
+      margin-top: 30px;
       font-size: 1.2em;
       font-weight: bold;
+      padding: 20px;
+      border-radius: 10px;
+      font-size: 14px;
+      color: #3D3D3F;
+      background: #F4F6FA;
     }
     button {
-      padding: 0.5em 1em;
+      position: relative;
+      padding: 16px;
+      padding-right: 40px;
+      width: 100%;
+      max-width: 260px;
       font-size: 1em;
+      font-weight: bold;
+      color: #FFF;
+      background: #2284F4;
+      border: none;
+      border-radius: 50vw;
+      box-shadow: rgba(0, 0, 0, 0.15) 1.95px 1.95px 2.6px;
+      transition: all ease .2s;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #114a8b;
+    }
+    button::before {
+      content: "\f7bf"; /* ← Font AwesomeのUnicode */
+      font-family: "Font Awesome 6 Free";
+      font-weight: 900; /* solidアイコンはこれ */
+      position: absolute;
+      right: 26px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 20px;
+      color: currentColor;
     }
     .tag {
       background-color: #dff0d8;
@@ -24,14 +59,42 @@
       padding: 4px 8px;
       border-radius: 4px;
       display: inline-block;
-      margin-top: 0.5em;
+      margin-top: 18px;
+      margin-left: 10px;
+    }
+    .tag-green {
+      background-color: #dff0d8;
+      color: #3c763d;
+    }
+
+    .tag-orange {
+      background-color: #ffefd2;
+      color: #ff9124;
+    }
+
+    .tag-blue {
+      background-color: #d9edf7;
+      color: #31708f;
+    }
+    .card-name {
+      margin-top: 5px;
+      padding-left: 10px;
+      font-size: 20px;
+      color: #232323;
+    }
+    .right-text {
+      text-align: right;
+      margin-top: 10px;
     }
   </style>
 </head>
 <body>
-  <h2>現在地からエリアを判定</h2>
-  <button onclick="checkLocation()">最寄りの区域を探す</button>
-  <div id="result">位置情報を取得していません。</div>
+  <div class="inner">
+    <!-- <h2>この場所の区域を見る</h2> -->
+    <button onclick="checkLocation()">みつける</button>
+    <div id="result">位置を読み込んでいません。</div>
+    </div>
+  </div>
 
   <script>
     const polygons = [{"name": "FT01A", "label": "\u30c6\u30b9\u30c8\u30a8\u30ea\u30a21", "coords": [{"lng": 140.0077027, "lat": 35.7450994}, {"lng": 140.007932, "lat": 35.7448893}, {"lng": 140.0079736, "lat": 35.7450863}, {"lng": 140.0078408, "lat": 35.7451788}, {"lng": 140.0077027, "lat": 35.7450994}]}, {"name": "FT01B", "label": "\u30c6\u30b9\u30c8\u30a8\u30ea\u30a22", "coords": [{"lng": 140.0079736, "lat": 35.7450863}, {"lng": 140.007932, "lat": 35.7448893}, {"lng": 140.0078006, "lat": 35.7450003}, {"lng": 140.0077161, "lat": 35.744873}, {"lng": 140.0076557, "lat": 35.7447173}, {"lng": 140.0078649, "lat": 35.74459}, {"lng": 140.0080259, "lat": 35.7450406}, {"lng": 140.0079736, "lat": 35.7450863}]}, {"name": "FT01C", "label": "\u30c6\u30b9\u30c8\u30a8\u30ea\u30a23", "coords": [{"lng": 140.0076557, "lat": 35.7447249}, {"lng": 140.0077161, "lat": 35.744873}, {"lng": 140.0078006, "lat": 35.7450003}, {"lng": 140.0077027, "lat": 35.7450994}, {"lng": 140.0074425, "lat": 35.7449122}, {"lng": 140.0076557, "lat": 35.7447249}]}];
@@ -64,9 +127,16 @@
         let found = false;
         for (const poly of polygons) {
           if (pointInPolygon(userPoint, poly.coords)) {
+            let tagClass = '';
+            if (poly.label === '中沢エリア') tagClass = 'tag tag-orange';
+            else if (poly.label === '馬込沢エリア') tagClass = 'tag tag-blue';
+            else tagClass = 'tag tag-green'; // 道野辺エリアなど、デフォルト
+
             document.getElementById('result').innerHTML =
-              `<div>区域名: ${poly.name}</div>
-               <div class="tag">$ {poly.label}</div>`;
+              `<div>あなたが今いる区域は</div>
+              <div class="${tagClass}">${poly.label}</div>
+              <div class="card-name">${poly.name}</div>
+              <div class="right-text">です。</div>`;
             found = true;
             break;
           }
